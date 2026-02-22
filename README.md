@@ -32,17 +32,17 @@ Every component was selected to handle specific Big Data constraints (Volume, Ve
 
 **1.Deploy the Infrastructure**
 
-docker-compose up -d
+`docker-compose up -d`
 
 Wait for all containers (Kafka, Hadoop, Spark, Cassandra) to reach the "Started" state.
 
 **2.Initialize the Kafka Topic**
 
-docker exec -it kafka kafka-topics --create --topic network-traffic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+`docker exec -it kafka kafka-topics --create --topic network-traffic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1`
 
 **3.Setup Cassandra Schema**
 
-docker exec -it cassandra_interne cqlsh -e "CREATE KEYSPACE IF NOT EXISTS projet_logs WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}; CREATE TABLE IF NOT EXISTS projet_logs.resultats_ips (ip text PRIMARY KEY, count int, last_seen timestamp, prediction text);"
+`docker exec -it cassandra_interne cqlsh -e "CREATE KEYSPACE IF NOT EXISTS projet_logs WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}; CREATE TABLE IF NOT EXISTS projet_logs.resultats_ips (ip text PRIMARY KEY, count int, last_seen timestamp, prediction text);"`
 
 **4.Start the Pipeline Components**
 
@@ -50,18 +50,18 @@ Open separate terminals for each process:
 
 *Start the Spark Stream Processor*
 
-docker exec -it mon_dashboard_container python spark_processor.py
+`docker exec -it mon_dashboard_container python spark_processor.py`
 
 *Start the Network Sniffer*
 
-python real_sniffer.py
+`python real_sniffer.py`
 
 *Start the Streamlit Dashboard*
 
-docker exec -it mon_dashboard_container streamlit run app.py
+`docker exec -it mon_dashboard_container streamlit run app.py`
 
 Access the dashboard at http://localhost:8501
 
 **5.Simulate an Attack**
 
-python attacker.py
+`python attacker.py`
