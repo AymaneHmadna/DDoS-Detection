@@ -15,7 +15,7 @@ Every component was selected to handle specific big data constraints (volume, ve
 
 * **Scapy:** Low level packet sniffing capturing source IPs, target ports, and metadata.
 * **Apache kafka:** Acts as a high performance buffer (topic: `network-traffic`) to decouple ingestion from processing, handling potential backpressure and preventing packet loss.
-* **Apache spark streaming:** Consumes the Kafka stream, applies detection logic (e.g., volumetric analysis and port 6666 filtering) in micro batches with in memory processing and exactly once semantics.
+* **Apache spark:** Consumes the Kafka stream, applies detection logic (e.g., volumetric analysis and port 6666 filtering) in micro batches with in memory processing and exactly once semantics.
 * **Apache cassandra:** A write heavy NoSQL database storing real time alerts and metrics for immediate, low latency dashboard querying.
 * **HDFS:** A distributed data lake archiving raw JSON attack logs for future machine learning model training.
 * **Streamlit:** Live monitoring dashboard updating every 2 seconds to reflect system status (Active/Critical).
