@@ -8,28 +8,47 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 
 ## Overview
-[cite_start]This project implements a robust Big Data pipeline designed to ingest, process, and visualize network traffic in real-time to detect cyberattacks (specifically DDoS)[cite: 5]. [cite_start]Built on a **Lambda Architecture** [cite: 6][cite_start], it captures raw TCP/IP packets at the network interface [cite: 23] [cite_start]and processes them through a high-throughput, fault-tolerant streaming engine[cite: 16].
+This project implements a robust Big Data pipeline designed to ingest, process, and visualize network traffic in real-time to detect cyberattacks (specifically DDoS). Built on a **Lambda Architecture**, it captures raw TCP/IP packets at the network interface and processes them through a high-throughput, fault-tolerant streaming engine.
 
 ## Architecture & Tech Stack
-[cite_start]Every component was selected to handle specific Big Data constraints (Volume, Velocity, Variety)[cite: 7]:
+Every component was selected to handle specific Big Data constraints (Volume, Velocity, Variety):
 
-* [cite_start]**Ingestion (Scapy):** Low-level packet sniffing capturing source IPs, target ports, and metadata[cite: 22, 23].
-* [cite_start]**Buffer/Broker (Apache Kafka):** Acts as a high-performance buffer (topic: `network-traffic`) to decouple ingestion from processing, handling potential backpressure and preventing packet loss[cite: 8, 9, 11].
-* [cite_start]**Stream Processing (Apache Spark Structured Streaming):** Consumes the Kafka stream, applies detection logic (e.g., volumetric analysis and port 6666 filtering) in micro-batches with in-memory processing and exactly-once semantics[cite: 13, 14, 15, 16].
-* [cite_start]**Speed Layer / Hot Path (Apache Cassandra):** A write-heavy NoSQL database storing real-time alerts and metrics for immediate, low-latency dashboard querying[cite: 16].
-* [cite_start]**Batch Layer / Cold Path (Hadoop HDFS):** A distributed data lake archiving raw JSON attack logs for future Machine Learning model training[cite: 16, 17, 18].
-* [cite_start]**Visualization (Streamlit):** Live monitoring dashboard updating every 2 seconds to reflect system status (Active/Critical)[cite: 28, 66, 73].
-* [cite_start]**Infrastructure (Docker Compose):** Fully containerized environment orchestrating Zookeeper, Kafka, Namenode, Datanode, Spark, and Cassandra[cite: 18].
+* **Ingestion (Scapy):** Low-level packet sniffing capturing source IPs, target ports, and metadata.
+* **Buffer/Broker (Apache Kafka):** Acts as a high-performance buffer (topic: `network-traffic`) to decouple ingestion from processing, handling potential backpressure and preventing packet loss.
+* **Stream Processing (Apache Spark Structured Streaming):** Consumes the Kafka stream, applies detection logic (e.g., volumetric analysis and port 6666 filtering) in micro-batches with in-memory processing and exactly-once semantics[cite: 13, 14, 15, 16].
+* **Speed Layer / Hot Path (Apache Cassandra):** A write-heavy NoSQL database storing real-time alerts and metrics for immediate, low-latency dashboard querying.
+* **Batch Layer / Cold Path (Hadoop HDFS):** A distributed data lake archiving raw JSON attack logs for future Machine Learning model training.
+* **Visualization (Streamlit):** Live monitoring dashboard updating every 2 seconds to reflect system status (Active/Critical).
+* **Infrastructure (Docker Compose):** Fully containerized environment orchestrating Zookeeper, Kafka, Namenode, Datanode, Spark, and Cassandra.
 
 ## Project Structure
-* [cite_start]`docker-compose.yml`: Infrastructure orchestration and virtual network configuration[cite: 18, 19].
-* [cite_start]`real_sniffer.py`: Network interface listener injecting packet data into Kafka[cite: 22, 23].
-* [cite_start]`spark_processor.py`: The core engine processing the stream and writing simultaneously to Cassandra and HDFS[cite: 24, 25].
-* [cite_start]`attacker.py`: Offensive script simulating a massive UDP flood (DDoS) on port 6666 to test system reactivity[cite: 26].
-* [cite_start]`app.py`: Streamlit-based real-time monitoring dashboard[cite: 28].
+* `docker-compose.yml`: Infrastructure orchestration and virtual network configuration.
+* `real_sniffer.py`: Network interface listener injecting packet data into Kafka.
+* `spark_processor.py`: The core engine processing the stream and writing simultaneously to Cassandra and HDFS.
+* `attacker.py`: Offensive script simulating a massive UDP flood (DDoS) on port 6666 to test system reactivity.
+* `app.py`: Streamlit-based real-time monitoring dashboard.
 
 ## Quickstart Guide
 
-**1. Deploy the Infrastructure**
+**1.Deploy the Infrastructure**
 ```bash
 docker-compose up -d
+Wait for all containers (Kafka, Hadoop, Spark, Cassandra) to reach the "Started" state.
+**2.Initialize the Kafka Topic**
+docker exec -it kafka kafka-topics --create --topic network-traffic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+**3.Setup Cassandra Schema**
+docker exec -it cassandra_interne cqlsh -e "CREATE KEYSPACE IF NOT EXISTS projet_logs WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}; CREATE TABLE IF NOT EXISTS projet_logs.resultats_ips (ip text PRIMARY KEY, count int, last_seen timestamp, prediction text);"
+**4.Start the Pipeline Components**
+Open separate terminals for each process:
+# Start the Spark Stream Processor
+docker exec -it mon_dashboard_container python spark_processor.py
+
+# Start the Network Sniffer
+python real_sniffer.py
+
+# Start the Streamlit Dashboard
+docker exec -it mon_dashboard_container streamlit run app.py
+Access the dashboard at http://localhost:8501
+
+**5.Simulate an Attack**
+python attacker.py
