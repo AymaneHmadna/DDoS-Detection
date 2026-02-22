@@ -24,7 +24,7 @@ Every component was selected to handle specific big data constraints (volume, ve
 ## Project Structure
 * `docker-compose.yml`: Infrastructure orchestration and virtual network configuration.
 * `real_sniffer.py`: Network interface listener injecting packet data into Kafka.
-* `spark_processor.py`: The core engine processing the stream and writing simultaneously to Cassandra and HDFS.
+* `spark_processor.py`: The core engine processing the stream and writing simultaneously to cassandra and HDFS.
 * `attacker.py`: Offensive script simulating a massive UDP flood (DDoS) on port 6666 to test system reactivity.
 * `app.py`: Streamlit based real time monitoring dashboard.
 
