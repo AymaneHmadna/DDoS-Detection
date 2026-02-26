@@ -1,3 +1,4 @@
+**[Click here to read the full technical Report (PDF)](./Report-DDoS-Detection.pdf)**
 # DDoS Detection
 
 ![Python](https://img.shields.io/badge/Python-3.9-blue.svg)
